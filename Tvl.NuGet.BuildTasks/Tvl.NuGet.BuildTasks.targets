@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="Tvl.NuGet.BuildTasks.CreatePackage" AssemblyFile="$(NuGetBuildTaskPath)\Tvl.NuGet.BuildTasks.dll" />
+  <UsingTask TaskName="Tvl.NuGet.BuildTasks.FindPackageInputs" AssemblyFile="$(NuGetBuildTaskPath)\Tvl.NuGet.BuildTasks.dll" />
+
+  <PropertyGroup>
+    <NuGetGeneratedPackageFileNames Condition="'$(NuGetGeneratedPackageFileNames)' == ''">$(MSBuildProjectFile).NuGetGeneratedPackagesListAbsolute.txt</NuGetGeneratedPackageFileNames>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Hook the package creation into the standard build pipeline. -->
+    <PrepareForRunDependsOn>
+      $(PrepareForRunDependsOn);
+      CreateNuGetPackage
+    </PrepareForRunDependsOn>
+
+    <!-- Set up dependencies so the task executes at the correct time -->
+    <CreateNuGetPackageDependsOn>
+      $(CreateNuGetPackageDependsOn);
+      CopyFilesToOutputDirectory;
+      NuGetReadGeneratedPackagesList;
+      FindNuGetPackageInputs
+    </CreateNuGetPackageDependsOn>
+
+    <FindNuGetPackageInputsDependsOn>
+      $(FindNuGetPackageInputsDependsOn);
+      CopyFilesToOutputDirectory
+    </FindNuGetPackageInputsDependsOn>
+  </PropertyGroup>
+
+  <!-- Make sure Visual Studio knows about our custom item types -->
+  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <AvailableItemName Include="NuGetManifest"/>
+  </ItemGroup>
+
+  <!-- Provide default property values for NuGetManifest metadata -->
+  <ItemDefinitionGroup>
+    <NuGetManifest>
+      <!-- When not empty, the `-OutputDirectory` option is passed to the command line tool with this value. -->
+      <OutputDirectory>$(OutDir)</OutputDirectory>
+      <!-- When not empty, the `-BasePath` option is passed to the command line tool with this value. -->
+      <BasePath>$(MSBuildProjectDirectory)</BasePath>
+      <!-- When true, `-Verbose` is passed to the command line tool. -->
+      <Verbose>False</Verbose>
+      <!-- When not empty, the `-Version` option is passed to the command line tool with this value. -->
+      <Version/>
+      <!-- When not empty, the `-Exclude` option is passed to the command line tool with this value. -->
+      <Exclude/>
+      <!-- When true, `-Symbols` is passed to the command line tool. -->
+      <Symbols>False</Symbols>
+      <!-- When false, `-NoDefaultExcludes` is passed to the command line tool. -->
+      <DefaultExcludes>True</DefaultExcludes>
+      <!-- When false, `-NoPackageAnalysis` is passed to the command line tool. -->
+      <PackageAnalysis>True</PackageAnalysis>
+      <!-- When not empty, the `-Verbosity` option is passed to the command line tool with this value. -->
+      <Verbosity/>
+      <!-- When true, `-NonInteractive` is passed to the command line tool. -->
+      <NonInteractive>True</NonInteractive>
+      <!-- When not empty, the `-MinClientVersion` option is passed to the command line tool with this value. -->
+      <MinClientVersion/>
+    </NuGetManifest>
+  </ItemDefinitionGroup>
+
+  <Target Name="NuGetReadGeneratedPackagesList">
+    <ReadLinesFromFile File="$(IntermediateOutputPath)$(NuGetGeneratedPackageFileNames)">
+      <Output TaskParameter="Lines" ItemName="NuGetOutputPackageFilesList"/>
+    </ReadLinesFromFile>
+  </Target>
+
+  <Target Name="FindNuGetPackageInputs"
+          DependsOnTargets="$(FindNuGetPackageInputsDependsOn)"
+          Condition="'@(NuGetManifest)' != ''">
+
+    <FindPackageInputs
+      Configuration="$(Configuration)"
+      Platform="$(Platform)"
+      Manifests="@(NuGetManifest)"
+      OutputDirectory="%(NuGetManifest.OutputDirectory)"
+      BasePath="%(NuGetManifest.BasePath)"
+      Version="%(NuGetManifest.Version)">
+
+      <Output ItemName="CreateNuGetPackageInputs" TaskParameter="PackageInputs" />
+    </FindPackageInputs>
+
+    <!-- This is a hack to make sure the output assembly gets included prior to properly implementing FindPackageInputs -->
+    <Warning Condition="'@(CreateNuGetPackageInputs)' != ''"
+             Text="The following hack should have been removed when FindPackageInputs was implemented." />
+
+    <ItemGroup>
+      <CreateNuGetPackageInputs Include="$(TargetPath)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="CreateNuGetPackage"
+          DependsOnTargets="$(CreateNuGetPackageDependsOn)"
+          Condition="'@(NuGetManifest)' != ''"
+          Inputs="@(NuGetManifest);@(CreateNuGetPackageInputs)"
+          Outputs="@(NuGetOutputPackageFilesList);
+                  $(IntermediateOutputPath)$(NuGetGeneratedPackageFileNames);">
+
+    <ItemGroup>
+      <NuGetGeneratedPackageFiles Remove="@(NuGetGeneratedPackageFiles)" />
+    </ItemGroup>
+
+    <CreatePackage
+      Configuration="$(Configuration)"
+      Platform="$(Platform)"
+      PackagesFolder="$(MSBuildThisFileDirectory)..\..\"
+      Manifest="%(NuGetManifest.Identity)"
+      OutputDirectory="%(NuGetManifest.OutputDirectory)"
+      BasePath="%(NuGetManifest.BasePath)"
+      Verbose="%(NuGetManifest.Verbose)"
+      Version="%(NuGetManifest.Version)"
+      Exclude="%(NuGetManifest.Exclude)"
+      Symbols="%(NuGetManifest.Symbols)"
+      DefaultExcludes="%(NuGetManifest.DefaultExcludes)"
+      PackageAnalysis="%(NuGetManifest.PackageAnalysis)"
+      Verbosity="%(NuGetManifest.Verbosity)"
+      NonInteractive="%(NuGetManifest.NonInteractive)"
+      MinClientVersion="%(NuGetManifest.MinClientVersion)">
+
+      <Output ItemName="NuGetGeneratedPackageFiles" TaskParameter="GeneratedPackageFiles" />
+    </CreatePackage>
+
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)$(NuGetGeneratedPackageFileNames)"
+      Lines="@(NuGetGeneratedPackageFiles)"
+      Overwrite="true"/>
+  </Target>
+
+  <Target Name="NuGetPackageAddFilesGenerated"
+          AfterTargets="CreateNuGetPackage"
+          Condition="'@(NuGetManifest)' != ''">
+
+    <ItemGroup>
+      <NuGetGeneratedPackageFiles Condition="'@(NuGetGeneratedPackageFiles)' == ''" Include="@(NuGetOutputPackageFilesList)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <FileWrites Include="@(NuGetGeneratedPackageFiles);$(IntermediateOutputPath)$(NuGetGeneratedPackageFileNames)" />
+    </ItemGroup>
+
+  </Target>
+</Project>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata minClientVersion="2.7">
+    <id>Tvl.NuGet.BuildTasks</id>
+    <version>0.0.0</version>
+    <authors>Sam Harwell</authors>
+    <owners>Sam Harwell</owners>
+    <developmentDependency>true</developmentDependency>
+    <tags>nuget msbuild</tags>
+    <title>NuGet Build Tasks</title>
+    <summary>MSBuild integration for NuGet package creation</summary>
+    <description>MSBuild integration for NuGet package creation</description>
+    <language>en-us</language>
+    <copyright>Copyright © Sam Harwell 2015</copyright>
+    <projectUrl>https://github.com/tunnelvisionlabs/NuGetBuildTasks</projectUrl>
+    <licenseUrl>https://raw.github.com/tunnelvisionlabs/NuGetBuildTasks/master/LICENSE.md</licenseUrl>
+    <releaseNotes>https://github.com/tunnelvisionlabs/NuGetBuildTasks/releases/$version$</releaseNotes>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <dependencies>
+      <dependency id="NuGet.CommandLine" version="[2.8.3]"/>
+    </dependencies>
+  </metadata>
+
+  <files>
+    <!-- Build configuration -->
+    <file src="Tvl.NuGet.BuildTasks.props" target="build\Tvl.NuGet.BuildTasks.props"/>
+    <file src="Tvl.NuGet.BuildTasks.targets" target="build\Tvl.NuGet.BuildTasks.targets"/>
+    <file src="$OutDir$Tvl.NuGet.BuildTasks.dll" target="build"/>
+  </files>
+
+</package>

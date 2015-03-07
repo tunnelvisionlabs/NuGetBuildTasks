@@ -30,6 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -39,7 +41,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CreatePackage.cs" />
+    <Compile Include="FindPackageInputs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <NuGetManifest Include="Tvl.NuGet.BuildTasks.nuspec">
+      <Version>1.0.0-dev</Version>
+      <DefaultExcludes>false</DefaultExcludes>
+      <PackageAnalysis>false</PackageAnalysis>
+    </NuGetManifest>
+    <None Include="Tvl.NuGet.BuildTasks.props" />
+    <None Include="Tvl.NuGet.BuildTasks.targets" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
