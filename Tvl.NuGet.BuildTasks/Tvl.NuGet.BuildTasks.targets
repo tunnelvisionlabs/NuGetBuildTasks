@@ -2,6 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="Tvl.NuGet.BuildTasks.CreatePackage" AssemblyFile="$(NuGetBuildTaskPath)\Tvl.NuGet.BuildTasks.dll" />
   <UsingTask TaskName="Tvl.NuGet.BuildTasks.FindPackageInputs" AssemblyFile="$(NuGetBuildTaskPath)\Tvl.NuGet.BuildTasks.dll" />
+  <UsingTask TaskName="Tvl.NuGet.BuildTasks.SetNuGetManifestMetadata" AssemblyFile="$(NuGetBuildTaskPath)\Tvl.NuGet.BuildTasks.dll" />
 
   <PropertyGroup>
     <NuGetGeneratedPackageFileNames Condition="'$(NuGetGeneratedPackageFileNames)' == ''">$(MSBuildProjectFile).NuGetGeneratedPackagesListAbsolute.txt</NuGetGeneratedPackageFileNames>
@@ -24,7 +25,8 @@
 
     <FindNuGetPackageInputsDependsOn>
       $(FindNuGetPackageInputsDependsOn);
-      CopyFilesToOutputDirectory
+      CopyFilesToOutputDirectory;
+      EnsureNuGetManifestMetadata;
     </FindNuGetPackageInputsDependsOn>
   </PropertyGroup>
 
@@ -65,6 +67,25 @@
     <ReadLinesFromFile File="$(IntermediateOutputPath)$(NuGetGeneratedPackageFileNames)">
       <Output TaskParameter="Lines" ItemName="NuGetOutputPackageFilesList"/>
     </ReadLinesFromFile>
+  </Target>
+
+  <Target Name="EnsureNuGetManifestMetadata"
+          DependsOnTargets="CopyFilesToOutputDirectory"
+          Condition="'@(NuGetManifest)' != ''">
+
+    <SetNuGetManifestMetadata
+      AssemblyFile="@(IntermediateAssembly)"
+      Manifests="@(NuGetManifest)">
+
+      <Output ItemName="_Temp" TaskParameter="OutputItems" />
+    </SetNuGetManifestMetadata>
+
+    <ItemGroup>
+      <NuGetManifest Remove="@(_Temp)" />
+      <NuGetManifest Include="@(_Temp)" />
+      <_Temp Remove="@(_Temp)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="FindNuGetPackageInputs"

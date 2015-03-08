@@ -26,6 +26,8 @@
     <file src="Tvl.NuGet.BuildTasks.props" target="build\Tvl.NuGet.BuildTasks.props"/>
     <file src="Tvl.NuGet.BuildTasks.targets" target="build\Tvl.NuGet.BuildTasks.targets"/>
     <file src="$OutDir$Tvl.NuGet.BuildTasks.dll" target="build"/>
+    <file src="$OutDir$System.Collections.Immutable.dll" target="build"/>
+    <file src="$OutDir$System.Reflection.Metadata.dll" target="build"/>
   </files>
 
 </package>
