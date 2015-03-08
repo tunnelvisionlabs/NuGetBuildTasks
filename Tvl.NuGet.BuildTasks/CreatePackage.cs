@@ -14,6 +14,13 @@
         }
 
         [Required]
+        public string ProjectName
+        {
+            get;
+            set;
+        }
+
+        [Required]
         public string Configuration
         {
             get;
@@ -186,9 +193,13 @@
             var match = Regex.Match(singleLine, "^Successfully created package '(.*?)'");
             if (match.Success && !string.IsNullOrEmpty(match.Groups[1].Value))
             {
+                TaskItem taskItem = new TaskItem(match.Groups[1].Value);
                 var generatedPackages = GeneratedPackageFiles.ToList();
-                generatedPackages.Add(new TaskItem(match.Groups[1].Value));
+                generatedPackages.Add(taskItem);
                 GeneratedPackageFiles = generatedPackages.ToArray();
+
+                if (!taskItem.ItemSpec.EndsWith(".symbols.nupkg"))
+                    Log.LogMessage(MessageImportance.High, $"{ProjectName} -> {Path.GetFullPath(taskItem.ItemSpec)}");
             }
         }
     }

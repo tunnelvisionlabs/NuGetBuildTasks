@@ -104,6 +104,7 @@
     </ItemGroup>
 
     <CreatePackage
+      ProjectName="$(MSBuildProjectName)"
       Configuration="$(Configuration)"
       Platform="$(Platform)"
       PackagesFolder="$(MSBuildThisFileDirectory)..\..\"
