@@ -7,7 +7,7 @@
     <owners>Sam Harwell</owners>
     <developmentDependency>true</developmentDependency>
     <tags>nuget msbuild</tags>
-    <title>NuGet Build Tasks</title>
+    <title>NuGet MSBuild Tasks by Tunnel Vision Labs</title>
     <summary>MSBuild integration for NuGet package creation</summary>
     <description>MSBuild integration for NuGet package creation</description>
     <language>en-us</language>
