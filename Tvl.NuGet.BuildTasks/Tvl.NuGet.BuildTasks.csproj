@@ -47,7 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <NuGetManifest Include="Tvl.NuGet.BuildTasks.nuspec">
-      <Version>1.0.0-dev</Version>
+      <Version>1.0.0-alpha001</Version>
       <DefaultExcludes>false</DefaultExcludes>
       <PackageAnalysis>false</PackageAnalysis>
     </NuGetManifest>
