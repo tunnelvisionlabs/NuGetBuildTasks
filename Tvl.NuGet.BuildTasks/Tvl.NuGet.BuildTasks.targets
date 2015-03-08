@@ -2,6 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="Tvl.NuGet.BuildTasks.CreatePackage" AssemblyFile="$(NuGetBuildTaskPath)\Tvl.NuGet.BuildTasks.dll" />
   <UsingTask TaskName="Tvl.NuGet.BuildTasks.FindPackageInputs" AssemblyFile="$(NuGetBuildTaskPath)\Tvl.NuGet.BuildTasks.dll" />
+  <UsingTask TaskName="Tvl.NuGet.BuildTasks.SetNuGetManifestMetadata" AssemblyFile="$(NuGetBuildTaskPath)\Tvl.NuGet.BuildTasks.dll" />
 
   <PropertyGroup>
     <NuGetGeneratedPackageFileNames Condition="'$(NuGetGeneratedPackageFileNames)' == ''">$(MSBuildProjectFile).NuGetGeneratedPackagesListAbsolute.txt</NuGetGeneratedPackageFileNames>
@@ -24,7 +25,8 @@
 
     <FindNuGetPackageInputsDependsOn>
       $(FindNuGetPackageInputsDependsOn);
-      CopyFilesToOutputDirectory
+      CopyFilesToOutputDirectory;
+      EnsureNuGetManifestMetadata;
     </FindNuGetPackageInputsDependsOn>
   </PropertyGroup>
 
@@ -67,6 +69,25 @@
     </ReadLinesFromFile>
   </Target>
 
+  <Target Name="EnsureNuGetManifestMetadata"
+          DependsOnTargets="CopyFilesToOutputDirectory"
+          Condition="'@(NuGetManifest)' != ''">
+
+    <SetNuGetManifestMetadata
+      AssemblyFile="@(IntermediateAssembly)"
+      Manifests="@(NuGetManifest)">
+
+      <Output ItemName="_Temp" TaskParameter="OutputItems" />
+    </SetNuGetManifestMetadata>
+
+    <ItemGroup>
+      <NuGetManifest Remove="@(_Temp)" />
+      <NuGetManifest Include="@(_Temp)" />
+      <_Temp Remove="@(_Temp)" />
+    </ItemGroup>
+
+  </Target>
+
   <Target Name="FindNuGetPackageInputs"
           DependsOnTargets="$(FindNuGetPackageInputsDependsOn)"
           Condition="'@(NuGetManifest)' != ''">
@@ -77,9 +98,11 @@
       Manifests="@(NuGetManifest)"
       OutputDirectory="%(NuGetManifest.OutputDirectory)"
       BasePath="%(NuGetManifest.BasePath)"
-      Version="%(NuGetManifest.Version)">
+      Version="%(NuGetManifest.Version)"
+      Symbols="%(NuGetManifest.Symbols)">
 
       <Output ItemName="CreateNuGetPackageInputs" TaskParameter="PackageInputs" />
+      <Output ItemName="NuGetCurrentOutputPackageFilesList" TaskParameter="PackageOutputs" />
     </FindPackageInputs>
 
     <!-- This is a hack to make sure the output assembly gets included prior to properly implementing FindPackageInputs -->
@@ -97,6 +120,7 @@
           Condition="'@(NuGetManifest)' != ''"
           Inputs="@(NuGetManifest);@(CreateNuGetPackageInputs)"
           Outputs="@(NuGetOutputPackageFilesList);
+                  @(NuGetCurrentOutputPackageFilesList);
                   $(IntermediateOutputPath)$(NuGetGeneratedPackageFileNames);">
 
     <ItemGroup>
