@@ -98,9 +98,11 @@
       Manifests="@(NuGetManifest)"
       OutputDirectory="%(NuGetManifest.OutputDirectory)"
       BasePath="%(NuGetManifest.BasePath)"
-      Version="%(NuGetManifest.Version)">
+      Version="%(NuGetManifest.Version)"
+      Symbols="%(NuGetManifest.Symbols)">
 
       <Output ItemName="CreateNuGetPackageInputs" TaskParameter="PackageInputs" />
+      <Output ItemName="NuGetCurrentOutputPackageFilesList" TaskParameter="PackageOutputs" />
     </FindPackageInputs>
 
     <!-- This is a hack to make sure the output assembly gets included prior to properly implementing FindPackageInputs -->
@@ -118,6 +120,7 @@
           Condition="'@(NuGetManifest)' != ''"
           Inputs="@(NuGetManifest);@(CreateNuGetPackageInputs)"
           Outputs="@(NuGetOutputPackageFilesList);
+                  @(NuGetCurrentOutputPackageFilesList);
                   $(IntermediateOutputPath)$(NuGetGeneratedPackageFileNames);">
 
     <ItemGroup>
